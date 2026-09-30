@@ -121,8 +121,8 @@ Condition (6) gives up genuine community feature requests that maintainers would
 **Selection rationale**
 
 1. It's test work I want to practice, and it's small enough for the time I had to work on it.
-2. The skills correctly saw that #64 had a "good first issue" label and was opened by a collaborator.
-3. It wasn't difficult to claim but the maintainers haven't replied to the recent claim comments.
+2. The skill correctly saw that #64 has a "good first issue" label, was opened by a collaborator, and has no one else on it. The rubric couldn't know that I'm already comfortable with Python and pytest, which is why I picked it over #15.
+3. I expect claiming it to be straightforward since nobody else is on it, but maintainers haven't replied to recent claim comments, so I may wait a while for a response.
 
 ---
 
