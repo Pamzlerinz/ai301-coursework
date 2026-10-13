@@ -56,4 +56,22 @@ Then run `make test-unit` to check nothing else in the unit suite changed.
 
 ## Deviations
 
-[Filled in after the build.]
+Nothing changed in the fix; the plan held. The branch changes only
+`tests/unit/test_relevance_scorer.py`: the new query and the removed xfail
+marker, and the results matched the test plan (`19 passed`,
+`avg_score=0.5`).
+
+Two small things about how I ran the checks, neither of which changes the
+plan:
+
+- I ran `pytest tests/unit -v -m unit` (what `make test-unit` runs) instead
+  of `make`, as the Unknowns section said I might. Before the change it gave
+  `375 passed, 53 xfailed`; after, `376 passed, 52 xfailed`, so the only
+  test that moved was this one.
+- I added `-rP` to the `-k partial_overlap` command, because pytest only
+  prints a passing test's captured log with that flag, and the log line is
+  where `avg_score=0.5` shows.
+
+The unknown about CI tracking the xfail marker resolved itself:
+`pyproject.toml` says "Fixing a seeded bug should remove ... the test's
+xfail marker", and nothing else in the repo references this test's marker.
