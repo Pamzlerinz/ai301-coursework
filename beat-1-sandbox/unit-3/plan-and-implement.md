@@ -19,9 +19,21 @@ Pamzlerinz
 
 **Plan comment**
 
-[Link to the comment where you posted your plan on the issue. Use the comment's own
-permalink. **Then paste the text of that comment underneath the link** — the pasted text is
-what this field is graded on, so copy across what you actually posted.]
+https://github.com/codepath/pathreview-ai301-fa26-howard/issues/64#issuecomment-6135342026
+
+Plan for #64, built from my reproduction above.
+
+**Cause:** the scorer is behaving correctly. It returns the share of query words found in the chunk, and the fixture's chunk contains all four words of "Python Django web framework", so 1.0 is right. My `--runxfail` run shows `avg_score=1.0 ... query_len=4`, which is every query word matching.
+
+**Change** (only `tests/unit/test_relevance_scorer.py`):
+1. Change the query in `test_query_with_partial_overlap` to "Python Django REST API". Only "python" and "django" are in the chunk, so the expected score is 2/4 = 0.5, inside the test's 0.3 to 0.9 range.
+2. Remove the `xfail(strict=True)` marker, since a fixed test would otherwise show up as a strict XPASS failure.
+
+Not changing `RelevanceScorer` or its tokenizer, or any other test.
+
+**Test:** re-run my repro commands. `pytest tests/unit/test_relevance_scorer.py -q -rx` should show `19 passed` with no xfail, and `--runxfail -k partial_overlap` should pass with `avg_score=0.5` in the log. Then the unit suite to check nothing else moved.
+
+One thing I haven't checked yet: whether anything in CI tracks the xfail marker. If removing it trips a check, I'll post that here before changing anything else.
 
 ---
 
