@@ -1,4 +1,4 @@
-# Contribution: [Issue Title]
+# Contribution: Allow Image Widgets to be sorted by translation percentage instead of alphabetically
 
 Path: `beat-2-contribution/contribution-story.md`
 
@@ -9,9 +9,8 @@ files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
 **Student:** [Student name]
-**GitHub Username:** [your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comments upstream are identified by this name.]
-**Issue:** [GitHub issue link]
+**GitHub Username:** Pamzlerinz
+**Issue:** https://github.com/WeblateOrg/weblate/issues/11161
 **Pull Request:** [GitHub PR link, once opened]
 
 One repository, built across units 5 to 8, telling the whole story of your real
@@ -55,23 +54,23 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 5: [one line on the tool work]**
+**Unit 9: [one line on the tool work]**
 
 [2-4 sentences: what you built (the scout, your strategy), what broke
 or fell short, what changed because of it.]
 
-**Unit 6: [one line on the tool work]**
+**Unit 10: [one line on the tool work]**
 
 [2-4 sentences: the voice-guard, the repo-memory file. What broke or
 fell short, and what changed because of it. "Nothing broke" counts when
 it is true - say how you know.]
 
-**Unit 7: [one line on the tool work]**
+**Unit 11: [one line on the tool work]**
 
 [2-4 sentences: the ship-gate and your gate manifest. What it produced
 on your real branch, what fought you, what changed because of it.]
 
-**Unit 8: [one line on the tool work]**
+**Unit 12: [one line on the tool work]**
 
 [2-4 sentences: the PR-monitor and your playbook. What it read, what it
 drafted, what you did with the draft.]
@@ -145,8 +144,19 @@ and how you solved them, or that none came up.]
 
 **Reproduction Evidence**
 
-- **Commit showing reproduction:** [link to commit in your fork]
-- **Screenshots/logs:** [if applicable]
+- **Commit showing reproduction:** none (the reproduction test is local only and excluded from git)
+- **Screenshots/logs:**
+
+  ```
+  $ uv run pytest weblate/trans/tests/test_repro_11161.py -q -s
+  rendered order (language, percent):
+    Czech        75%
+    English      100%
+    German       25%
+    Italian      25%
+  alphabetical?            True
+  sorted by percent desc?  False
+  ```
 - **My findings:** [what you discovered during reproduction; an
   honest, evidenced cannot-reproduce that led you to re-pick or ask
   the maintainer belongs here and costs you nothing]
