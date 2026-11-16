@@ -210,8 +210,7 @@ Result: pkg-14 passed cause-grounded, but it then failed executable, which led t
 2. Each time I loosened a check, I accepted a new miss. repro-check, plan-check and pr-precheck were all loosened to stop rejecting good work, and each now lets through something it used to catch. I wrote down each of those trade-offs.
 
 **Tool limits.**
-
-issue-scout: [where this tool still stops, in plain words, or the word none]
+issue-scout: it doesn’t notice a PR opened between the scan and my claim. On power-grid-model-io#107, PR#540 went up 27 minutes before my claim.
 issue-select: It can’t know my skills; it only uses scope.md to rank issues it has already accepted.
 plan-check: A plan that explains away a control with a believable but wrong story still passes cause-grounded.
 pr-precheck: It passes a false claim like “matches the expected output byte for byte” or “control unchanged”, because it can’t re-run anything.
