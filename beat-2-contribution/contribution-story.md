@@ -11,7 +11,7 @@ files and no evidence uploads are part of Assignment 5.
 **Student:** [Student name]
 **GitHub Username:** Pamzlerinz
 **Issue:** https://github.com/WeblateOrg/weblate/issues/11161
-**Pull Request:** [GitHub PR link, once opened]
+**Pull Request:** https://github.com/WeblateOrg/weblate/pull/22856
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -240,20 +240,15 @@ built, decisions you made when you made them, wrong turns included.]
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** https://github.com/WeblateOrg/weblate/pull/22856
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** Title: "feat(widgets): allow sorting language bar charts by translation percentage". Opens with `Fixes #11161`. Sections: What this changes (a `sort_by_percent` boolean in `MultiLanguageWidget.extra_parameters` and `get_sorted_language_stats()`, used by the `multi`, `horizontal`, and `matrix` widgets; ties stay alphabetical; default order unchanged; follows nijel's #20392 request via #20257's boolean parameters), Before and after (Czech 75% above English 100% on `main`; the new tests fail on `main` with `['Czech', 'German', 'Italian', 'Japanese'] != ['Japanese', 'German', 'Italian', 'Czech']` and pass on the branch), Checks (`test_widgets.py` 296 passed, prek hooks passed, mypy clean on the two changed files, full suite left to CI), and AI assistance.
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-  state and costs you nothing]
-- [Date]: [how you addressed it]
+- 2026-11-16: none yet
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review
 
 **Toolkit**
 
