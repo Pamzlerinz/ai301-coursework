@@ -137,11 +137,44 @@ Unit 11 (2026-11-16): plan-check was used again on my Weblate plan. My Implement
 
 **pr-precheck**
 
-**What it is, and the judgment hole I wrote:** ...
+**What it is, and the judgment hole I wrote:** 
+pr-precheck reads a PR draft before you submit it: the diff, the description, the test evidence and the repo’s rules. It decides accept or reject. My rubric has 8 checks, and seven of them are required, each required check guards against something that would make a maintainer decline the PR, or that would mislead them:
 
-**How it evolved, dated:** ...
+1. plan-fidelity: every hunk in the diff is the planned fix, a test for it, a doc or changelog entry, or a change a deviation note explains.
+2. description-honest: every claim in the title and description is true of the diff.
+3. repro-rerun: the plan’s repro is shown re-run on the branch with an after-result you can see, and every failure mode the plan names is either shown or stated as not run.
+4. repo-checks-run: the PR shows the repo’s own suite or linters were run, with their outcome.
+5. diff-clean: no debug prints, commented-out code, stray files or formatting-only churn.
+6. template-and-policy: the PR template and any AI policy are fully met.
+7. thread-engaged: the PR follows maintainer direction, or explains why it differs.
 
-**Evidence:** ...
+**How it evolved, dated:** 
+Smoke run on the 4 calibration packages (2026-10-19, Unit 4)
+
+All four matched their labels. calib-01 was accepted, and calib-02, calib-03 and calib-04 were rejected. But one check read calib-03 wrongly:
+
+calib-03’s after-result was “matches the issue’s expected output byte for byte”, and its control was “All-comments control unchanged”.
+The grader failed repro-rerun, saying neither gave “an output line, exit code or value”.
+That was wrong, because the issue writes out the expected output, so a reader can check it. And demanding full output for a control that already worked would push good PRs into rejects.
+
+The change: repro-rerun loosened. I added two sentences:
+
+An after-result that says it matches a specific expected output the plan or issue writes out (“matches the issue’s expected output byte for byte”) is observable. For a control (a case that already worked and must keep working), naming it and saying it is unchanged is enough.
+
+I rejected the other option, accepting any stated after-result, because it would pass “should work” and “the library update looks right” (calib-02).
+
+**Evidence:** 
+I then did a full run, saved at 7:53 PM EDT on 2026-10-19
+
+```text
+# eval run written by run_eval.py at 2026-10-19T23:53:36Z
+agreement: 20/20 scored items  (bar: 18/20: PASS)
+clear-accept 7/7  not-tested 4/4  silent-drift 4/4  standards-wall 2/2  unreviewable 3/3
+```
+
+not-tested 4/4 shows the loosening didn’t let untested PRs through, and calib-04 still failed on its missing second failure mode.
+
+It changed less than my other tools did: one revision, and only one full run. 
 
 ## Inventory
 
