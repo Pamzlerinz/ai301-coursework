@@ -178,8 +178,13 @@ It changed less than my other tools did: one revision, and only one full run.
 
 ## Inventory
 
-- repro-check: ...
-- (one bullet for every other tool, including any unit 9–12 tools)
+- repro-check: It grades a reproduction and decides whether it really reproduces the issue with evidence. It went from 17/20 to 19/20 and was saved on 2026-10-05. One miss is still not resolved.
+- voice guard: It is a hook that checks every comment, issue or PR body that I post through Claude Code against the voice-guide.md rules before it goes out, installed Nov 15, and stopped 2 real drafts, the Weblate claim and the update. For now it passed the same claim text a minute before stopping it, and it doesn't fire when gh is called by its full path
+- CLAUDE.local.md, the repo memory file: it is a private notes file in my Weblate clone that Claude Code reads every session. It imports Weblate's AGENTS.md and holds conventions. It is in use, first saying the widgets needed cairo, which was wrong for the current state of Weblate and I corrected it.
+- ship-gate: a hook that runs before gh pr create. It runs my manifest's checks, then my pr-precheck. The first run stopped my PR (description-honest); the second passed; PR #22856 opened.
+- PR monitor: reads my open PR (checks, reviews, quiet days) and drafts my next move into a file. It never posts. It is not installed yet. 
+
+
 
 ## The Arc
 
