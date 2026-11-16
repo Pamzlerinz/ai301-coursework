@@ -54,10 +54,12 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 9: [one line on the tool work]**
+**Unit 9: Built issue-scout and ran my first wild scan**
 
-[2-4 sentences: what you built (the scout, your strategy), what broke
-or fell short, what changed because of it.]
+What I built: issue-scout is my tool. It searches for candidate issues using my search strategy, then grades them with my rubric. 
+What it produced: My first wild scan (2026-11-15) graded its top 5 results. Three were rejected because they already had open PRs, and it accepted a junk issue labeled `invalid` and `duplicate`. After that I graded about 25 picks from the Issue Selection site one at a time; most were out because they already had open PRs or weren’t Python-first.
+What broke or fell short: I claimed power-grid-model-io#107, then found PR #540 had been opened 27 minutes before my claim. The scout’s “unclaimed” read was out of date by the time I acted on it, and I posted a withdrawal.
+What changed because of it: In the tool, I added `-linked:pr -label:invalid -label:duplicate -label:wontfix` to both queries, made the styling filter match whole words, and replaced `scope-bounded` with `scope-feasible` plus a difficulty note. In my process, before claiming weblate#11161, I ran a GraphQL query for prior PRs. It found the stale PR #20392 and nijel’s request for a UI option. That check is still manual; it isn’t part of the scout yet.
 
 **Unit 10: [one line on the tool work]**
 
