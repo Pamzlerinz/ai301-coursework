@@ -131,16 +131,26 @@ and add the link the moment your claim lands.]
 
 **Environment Setup**
 
-[What a stranger would need to stand this up: your operating system,
-the relevant versions (language, runtime, package manager, the project
-itself), and how you set the project up. Then the challenges you faced
-and how you solved them, or that none came up.]
+- OS: Ubuntu 26.04.1 LTS under WSL2 (kernel 6.18.33.2-microsoft-standard-WSL2) on Windows 11
+- Versions: Python 3.14.4, Django 6.0.10, PostgreSQL 18.6, Valkey 9.0.4, uv 0.13.8
+- Project: Weblate `main` at `ecc00b2e9f0aa701869ebf8d915705e686a06614` (2026-11-15), cloned from my fork Pamzlerinz/weblate
+- Setup, following `docs/admin/install/venv-debian.rst`, `docs/contributing/start.rst`, and `docs/contributing/tests.rst`:
+  1. `apt install` the build libraries from `venv-debian.rst`, plus `postgresql`, `valkey-server`, `gettext`, and `libicu-dev`
+  2. `uv sync --all-extras --dev`
+  3. Create a PostgreSQL superuser `weblate` with password `weblate` (what `scripts/test-database.sh` expects), then `. scripts/test-database.sh`
+  4. `uv run ./manage.py collectstatic --noinput`
+  5. Baseline: `uv run pytest weblate/trans/tests/test_widgets.py` gives `293 passed, 187 subtests passed`
+
+Challenges and fixes:
+- Weblate does not run on native Windows (it needs PostgreSQL, Valkey, and Linux-only libraries). GitHub Codespaces refused with `HTTP 402: ... out of monthly free usage`, so I installed Ubuntu in WSL (`wsl --install -d Ubuntu`).
+- The first `uv sync` failed building `pyicu`: `Please install pkg-config on your system or set the ICU_VERSION environment variable`. Installing `libicu-dev`, which is not in the docs' package list, fixed it.
 
 **Steps to Reproduce**
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Set up the environment above and run `. scripts/test-database.sh`.
+2. Add a local test, `weblate/trans/tests/test_repro_11161.py`, built on `FixtureTestCase`. It stores a different `translated` count on each non-English translation's stats (highest for the alphabetically first language), calls `self.project.stats.update_stats()`, requests `widget-image` for the project with `widget="multi"`, `color="auto"`, `extension="svg"`, and prints each language name and percent in the order the SVG draws them.
+3. Run `uv run pytest weblate/trans/tests/test_repro_11161.py -q -s`.
+4. Observed: the languages come out alphabetically (Czech 75% above English 100%), not by percentage, and no URL parameter changes the order.
 
 **Reproduction Evidence**
 
@@ -157,9 +167,7 @@ and how you solved them, or that none came up.]
   alphabetical?            True
   sorted by percent desc?  False
   ```
-- **My findings:** [what you discovered during reproduction; an
-  honest, evidenced cannot-reproduce that led you to re-pick or ask
-  the maintainer belongs here and costs you nothing]
+- **My findings:** Reproduced on current `main`. The order comes from `MultiLanguageWidget.render()` in `weblate/trans/widgets.py`, which iterates over `sort_unicode(self.get_language_stats(), lambda x: str(x.language))`; `MatrixMultiLanguageWidget.render()` has the same line. One thing that didn't match what I set up: I gave German a higher count than Italian, but both rendered as 25%. Faking stats with `stats.store()` doesn't reliably reach the project-level numbers, which I confirmed later when the same approach made Czech drop out of my first regression test (see Implementation Notes). I posted the output on the issue: https://github.com/WeblateOrg/weblate/issues/11161#issuecomment-6906037699
 
 **Toolkit**
 
@@ -174,22 +182,23 @@ and how you solved them, or that none came up.]
 
 **Analysis**
 
-[Your analysis of the root cause: what is causing the issue, traced
-to the files and functions involved.]
+The language bar chart widgets always list languages alphabetically. In `weblate/trans/widgets.py`, `MultiLanguageWidget.render()` (the `multi` "Vertical language bar chart" widget, which `HorizontalMultiLanguageWidget` inherits) iterates over `sort_unicode(self.get_language_stats(), lambda x: str(x.language))`. `MatrixMultiLanguageWidget.render()` uses the same expression. Nothing reads a request parameter for ordering, so there is no way to get a "top languages" chart.
+
+The maintainer asked on the earlier attempt (PR #20392) for the option to be exposed in the UI, like PR #20257 (capitalize badges). Widgets declare UI options in `extra_parameters`; `weblate/trans/views/widgets.py` `widgets()` already sends them to the widgets page, and `weblate/static/js/widgets.js` already renders `boolean` parameters as a checkbox and adds them to the embed URL (added by #20257).
 
 **Proposed Solution**
 
-[High-level description of your fix approach, and what you are
-deliberately NOT changing.]
+Add a boolean `sort_by_percent` entry to `MultiLanguageWidget.extra_parameters`, so the vertical, horizontal, and matrix widgets all offer a "Sort by translation percentage" checkbox. Add `MultiLanguageWidget.get_sorted_language_stats(request)`, which keeps the alphabetical sort and, when `?sort_by_percent=1` is set, re-sorts by `translated_percent`, highest first. `sorted()` is stable, so ties stay alphabetical. I asked on the issue whether that tie-break is what the maintainers want and have no answer yet. Both `render()` methods call the helper instead of their inline sort.
+
+Not changing: the default order (still alphabetical without the parameter), other widgets, `widgets.js` and `views/widgets.py` (boolean parameters already work end to end), and how empty translations are skipped.
 
 **Implementation Plan**
 
-1. [Modify file X to do Y]
-2. [Add or change Z]
-3. [Update tests]
+1. `weblate/trans/widgets.py`: add the `sort_by_percent` extra parameter and `get_sorted_language_stats()` to `MultiLanguageWidget`; use it in `MultiLanguageWidget.render()` and `MatrixMultiLanguageWidget.render()`.
+2. `weblate/trans/tests/test_widgets.py`: add `WidgetsSortByPercentTest` with fixed stats (Czech 25%, German 50%, Italian 50%, Japanese 100%) covering the default order, the sorted order with the tie, all three widgets, and the rendered SVG.
+3. `docs/changes.rst`: one line under "New features" in the unreleased 2026.12 section.
 
-[Record deviations here as they happen: what changed mid-build and
-why. A recorded deviation is honest work; silent drift is not.]
+Deviation (2026-11-16): my first test faked stats with `translation.stats.store()` on the fixture project. That was unreliable: Czech came out at 0% and disappeared from the widget in both orders. The test now patches `get_language_stats()` with fixed stats instead. Second deviation: mypy flagged `"Widget" has no attribute "get_sorted_language_stats"` in the new test, because `WIDGETS[name]` is typed as the base class, so I added an `isinstance` narrowing in a second commit (`9cd7f2c`).
 
 **Toolkit**
 
@@ -202,10 +211,32 @@ why. A recorded deviation is honest work; silent drift is not.]
 
 ## Testing Strategy
 
-[What observable checks prove the fix: your reproduction steps re-run
-against the built change (before and after), and the repo's own test
-suite or checks with the outcome shown. "Tests pass" with nothing
-observable named is not a strategy.]
+**1. The reproduction, before and after.** Before, on `main`: the widget draws Czech 75% above English 100% (output in Reproduction Evidence). The new regression tests, run against `main`'s `widgets.py`, fail, and the rendered SVG with `?sort_by_percent=1` ignores the parameter:
+
+```
+$ uv run pytest weblate/trans/tests/test_widgets.py -k SortByPercent -q
+E       AssertionError: Lists differ: ['Czech', 'German', 'Italian', 'Japanese'] != ['Japanese', 'German', 'Italian', 'Czech']
+7 failed, 2 passed, 293 deselected in 10.20s
+```
+
+After, on `feat/11161-widget-sort-by-percent`:
+
+```
+$ uv run pytest weblate/trans/tests/test_widgets.py -k SortByPercent -v
+...::WidgetsSortByPercentTest::test_default_order_is_alphabetical PASSED
+...::WidgetsSortByPercentTest::test_sort_by_percent PASSED
+...::WidgetsSortByPercentTest::test_sort_by_percent_rendered PASSED
+3 passed, 293 deselected, 6 subtests passed in 7.75s
+```
+
+With the parameter the SVG lists Japanese (100%), German (50%), Italian (50%), Czech (25%): highest first, with the German/Italian tie alphabetical. The control, `test_default_order_is_alphabetical`, shows the order without the parameter is still Czech, German, Italian, Japanese for all three widgets.
+
+**2. The repo's own checks** (my ship manifest, from Weblate's AGENTS.md):
+
+- `uv run pytest weblate/trans/tests/test_widgets.py`: `296 passed, 193 subtests passed` (293 before, plus 3 new)
+- `uv run prek run --from-ref main --to-ref HEAD`: every hook passed (ruff check, ruff format, reuse lint, Sphinx Lint, codespell, typos)
+- `uv run mypy` on the two changed files: no errors in either. Full mypy already fails on `main` with 248 errors in 35 untouched files, so I scoped it.
+- Not run locally: the full test suite (it would take far longer than my setup allows); CI runs it on the PR.
 
 **Toolkit**
 
@@ -221,13 +252,25 @@ observable named is not a strategy.]
 [A running log, added to as you work. Date each entry. What you
 built, decisions you made when you made them, wrong turns included.]
 
-**[Date]**
+**2026-11-15**
 
-[Entry]
+Ran my first wild scan with issue-scout and graded about 25 Issue Selection site picks. Most already had open PRs or weren't Python-first.
 
-**[Date]**
+**2026-11-16**
 
-[Entry]
+Claimed power-grid-model-io#107, then found PR #540 had been opened 27 minutes before my claim. Posted a withdrawal and switched to weblate#11161. Before claiming, a GraphQL query found the stale PR #20392 and nijel's request to expose the option in the UI, so I planned to follow PR #20257's pattern. Posted my claim.
+
+**2026-11-16**
+
+Forked and cloned Weblate. Native Windows can't run it and Codespaces was out of free hours, so I set it up in WSL Ubuntu (`libicu-dev` was needed for `pyicu`). Baseline: 293 widget tests pass. Reproduced the alphabetical-only order with a local test and posted the output on the issue.
+
+**2026-11-16**
+
+Built the fix on `feat/11161-widget-sort-by-percent`. Found that boolean widget parameters already work end to end since #20257, so no JavaScript or view changes were needed. My first regression test failed in a confusing way (Czech missing from both orders); the cause was the stats-faking setup, not the fix, so I rewrote the test to patch `get_language_stats()` with fixed stats. Confirmed the new tests fail on `main` and pass on the branch. mypy flagged the test's widget type, so I narrowed it in a second commit.
+
+**2026-11-16**
+
+Wrote my ship manifest (widget tests, prek, scoped mypy, each run in WSL against the exact commit). plan-check accepted the plan. The ship-gate's first run stopped on my own pr-precheck: `description-honest` couldn't verify the sentence "The commits carry an `Assisted-by: Claude Code` line" from the commit list, so I removed it. The second run passed. Opened PR #22856.
 
 **Toolkit**
 
@@ -278,10 +321,7 @@ Toolkit blocks above are full of them.]
 
 ## Resources Used
 
-[What actually helped, not a reading list. List things this story
-already shows you using: the doc you followed to set the environment
-up, the thread that explained the bug, the person who answered you.
-One real entry beats ten plausible ones.]
-
-- [Link to documentation that helped]
-- [Discussion, issue, or post that helped]
+- Weblate's `AGENTS.md` (commit format, changelog rule, test and lint commands): https://github.com/WeblateOrg/weblate/blob/main/AGENTS.md
+- Weblate's contributor docs for local setup and tests: https://docs.weblate.org/en/latest/contributing/start.html and https://docs.weblate.org/en/latest/contributing/tests.html
+- nijel's review on the earlier stale PR, asking for the option in the UI: https://github.com/WeblateOrg/weblate/pull/20392
+- PR #20257 (capitalize badges), the pattern I followed for a boolean widget parameter: https://github.com/WeblateOrg/weblate/pull/20257
