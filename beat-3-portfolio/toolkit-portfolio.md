@@ -185,22 +185,25 @@ It changed less than my other tools did: one revision, and only one full run.
 - PR monitor: reads my open PR (checks, reviews, quiet days) and drafts my next move into a file. It never posts. It is not installed yet. 
 
 
-
 ## The Arc
+**Beat 1:** issue-select, issue-20
+Date: 2026-09-29
+Friction: Run 1 scored 18/20. My rubric accepted issue-20, a feature request opened by cursor[bot] that no maintainer had agreed to. It also rejected issue-01, a single docs task, as an “umbrella”. I noticed both in the disagreement lines of the eval output.
+Change: rewrote scope-bounded. Condition (1) now means “meant to be split into separate issues or PRs”, and I added (6) unaccepted new feature and (7) bot-opened issue.
+Result: the canary run scored 2/2 and the full run 20/20. I then used the tool to rank #64 first, and that’s the issue I fixed.
 
-**Beat 1**
-Date: ...
-Friction: ...
-Change: ...
-Result: ...
+**Beat 2:** repro-check, the honest cannot-reproduce
+Date: 2026-10-05
+Friction: Run 1 scored 17/20, below the bar. claims-supported rejected good reports: pkg-03 over one prose side note, and pkg-09, an honest cannot-reproduce, for saying “I ran this 5 times” with one output.
+Change: the check now backs only the main outcome. One artifact can stand for repeated runs, and hedged guesses are allowed.
+Result: 19/20 PASS, and the reject categories held (no-evidence 4/4, wrong-target 4/4). But pkg-05 newly flipped to reject, and that’s still unexplained.
 
-**Beat 2**
-Date: ...
-Friction: ...
-Change: ...
-Result: ...
+**Beat 3:** plan-check, the unproven control
+Date: 2026-10-12
+Friction: Run 1 rejected pkg-14, a good plan, with failed: cause-grounded. The grader read “consistent with the cause” as “proven”.
+Change: I added that a control the plan explains, which nothing in the repro contradicts, counts as consistent.
+Result: pkg-14 passed cause-grounded, but it then failed executable, which led to a second change. The wrong-cause canaries still rejected, and the final run scored 20/20.
 
-(add Beat 3, Beat 4 … in the same shape, oldest first)
 
 ## Limitations and What's Next
 
