@@ -204,13 +204,37 @@ Friction: Run 1 rejected pkg-14, a good plan, with failed: cause-grounded. The g
 Change: I added that a control the plan explains, which nothing in the repro contradicts, counts as consistent.
 Result: pkg-14 passed cause-grounded, but it then failed executable, which led to a second change. The wrong-cause canaries still rejected, and the final run scored 20/20.
 
+**Beat 4:** plan-check, the Windows encoding error
+Date: 2026-10-12
+Friction: pkg-02 kept crashing the harness (claude exited 1: Warning: no stdin data received in 3s), so the full run couldn’t be saved.
+Change: i ran with PYTHONUTF8=1, because pkg-02’s emoji broke Windows’ default encoding.
+Result: the canary run scored 5/5, and the full 20/20 run saved.
+
+**Beat 5:** pr-precheck on MY own PR #83 draft
+Date: 2026-10-19
+Friction: the live run flagged that my draft claimed mypy passed “as the Makefile runs it” without showing that output, and called a +1/−5 diff “the two-line change”.
+Change: I added the Makefile-form mypy output and both pytest commands, and described the change exactly.
+Result: the second run was clean, with no voice rules broken, and I opened PR #83.
+
+
 
 ## Limitations and What's Next
 1. My tools can’t check claims about evidence they never see. The pr-precheck write-up says it directly: “My tool can’t catch a confident false claim about evidence it never sees.” plan-check has the same gap, since a story that sounds right passes as long as nothing in the repro contradicts it. Every tool reads text, and none of them re-runs anything.
 2. Each time I loosened a check, I accepted a new miss. repro-check, plan-check and pr-precheck were all loosened to stop rejecting good work, and each now lets through something it used to catch. I wrote down each of those trade-offs.
 
+**What's Next.**
+1. Re-run the evidence instead of trusting it
+The limit it fixes: pr-precheck and plan-check only read text, so a false “matches byte for byte” claim passes.
+What I’d build: a step that runs the repro command from the plan on the branch and compares the output itself.
+Why it’s realistic: I already do this by hand. My #64 and Weblate test-evidence blocks are exactly those commands.
+
+2. Re-check “unclaimed” right before claiming
+The limit it fixes: issue-scout’s read went stale in 27 minutes on power-grid-model-io#107.
+What I’d build: a last-minute check for linked PRs and new claim comments that runs just before my post.
+Why it’s realistic: I already did this by hand on Weblate, with the GraphQL query that found PR #20392. The next step is making it part of the tool.
+
 **Tool limits.**
-issue-scout: it doesn’t notice a PR opened between the scan and my claim. On power-grid-model-io#107, PR#540 went up 27 minutes before my claim.
+issue-scout:  its unclaimed check is only a snapshot: it graded PR#107 as free 27 minutes after PR#540 had already been opened, and it couldn't see the sidebar-linked PR on #11161.
 issue-select: It can’t know my skills; it only uses scope.md to rank issues it has already accepted.
 plan-check: A plan that explains away a control with a believable but wrong story still passes cause-grounded.
 pr-precheck: It passes a false claim like “matches the expected output byte for byte” or “control unchanged”, because it can’t re-run anything.

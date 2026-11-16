@@ -8,7 +8,7 @@ format criteria grade exactly that. Your course repo link is the whole submissio
 files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
-**Student:** [Student name]
+**Student:** Kafilat Sarki-Umar
 **GitHub Username:** Pamzlerinz
 **Issue:** https://github.com/WeblateOrg/weblate/issues/11161
 **Pull Request:** https://github.com/WeblateOrg/weblate/pull/22856
