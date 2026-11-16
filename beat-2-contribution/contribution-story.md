@@ -249,9 +249,6 @@ With the parameter the SVG lists Japanese (100%), German (50%), Italian (50%), C
 
 ## Implementation Notes
 
-[A running log, added to as you work. Date each entry. What you
-built, decisions you made when you made them, wrong turns included.]
-
 **2026-11-15**
 
 Ran my first wild scan with issue-scout and graded about 25 Issue Selection site picks. Most already had open PRs or weren't Python-first.
