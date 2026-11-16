@@ -12,7 +12,7 @@ The tools I chose to write on are issue-select, plan-check and pr-precheck. The 
 **issue-select**
 
 **What it is, and the judgment hole I wrote:** 
-I worked on the issue-select as the first project on this list. It checks information about an issue, checks if the repo is archived, who opens an issue, the labels, comments, pull requests, assignees and the repo's AI rules. An example of what i decided was unclear, which was a rule "Unclear Handling", a check that asks “is this alive and available?” needs proof, so unclear means fail. A check that asks “is there a problem here?” needs a red flag to fail, so unclear means pass. Its judgment is based on my `rubric.md`, which has 8 checks, of which 5 are required. The 5 required are required because these are the important aspects that need to be checked, namely;
+I worked on the issue-select as the first project on this list. It checks information about an issue, checks if the repo is archived, who opens an issue, the labels, comments, pull requests, assignees and the repo's AI rules. An example of what I decided was unclear, which was a rule "Unclear Handling", a check that asks “is this alive and available?” needs proof, so unclear means fail. A check that asks “is there a problem here?” needs a red flag to fail, so unclear means pass. Its judgment is based on my `rubric.md`, which has 8 checks, of which 5 are required. The 5 required are required because these are the important aspects that need to be checked, namely;
 1. maintainer-alive: checks if a human has committed or commented recently.
 2. repo-in-use: checks if the repo isn’t archived and has been pushed to recently.
 3. scope-bounded: checks if the issue is one clear, small task. It isn’t a huge umbrella issue, an open design debate, an unapproved new feature, or something a bot opened.
@@ -20,7 +20,7 @@ I worked on the issue-select as the first project on this list. It checks inform
 5. ai-policy-allows: checks if the repo doesn’t ban AI-assisted contributions.
 
 **How it evolved, dated:** 
-2026-09-29: issue-select was downloaded, then utilizing AI, ran the eval and it worked for 18/20. Issue-01 and Issue-20 were missed. issue-01 (conda#16475) should have been accepted, but my rubric rejected it. It’s a single docs task whose “Proposed changes” section lists a new page plus updates to existing pages. issue-20 (excalidraw#11811, “Add company logo shape to the toolbar”) should have been rejected, but my rubric accepted it. The repo itself was healthy, so every other check passed. Scope-bound needed to be rewritten. Condition (1) failed anything “listing sub-items”, so it read a detailed plan as an umbrella issue and The problem was the issue: opened by cursor[bot] (NONE), with no labels, Comments (0 total), and “Logo asset TBD.” it was a feature that the maintainer didn't agree to and my rubric didn't have a condition for it
+2026-09-29: issue-select was downloaded, then utilizing AI, ran the eval and it worked for 18/20. Issue-01 and Issue-20 were missed. issue-01 (conda#16475) should have been accepted, but my rubric rejected it. It’s a single docs task whose “Proposed changes” section lists a new page plus updates to existing pages. issue-20 (excalidraw#11811, “Add company logo shape to the toolbar”) should have been rejected, but my rubric accepted it. The repo itself was healthy, so every other check passed. Scope-bound needed to be rewritten. Condition (1) failed anything “listing sub-items”, so it read a detailed plan as an umbrella issue, and the problem with issue-20 was: opened by cursor[bot] (NONE), with no labels, Comments (0 total), and “Logo asset TBD.” it was a feature that the maintainer didn't agree to and my rubric didn't have a condition for it.
 
 **Evidence:** 
 Before: condition (1) failed an issue for “listing sub-items”.
@@ -179,7 +179,7 @@ It changed less than my other tools did: one revision, and only one full run.
 ## Inventory
 
 - repro-check: It grades a reproduction and decides whether it really reproduces the issue with evidence. It went from 17/20 to 19/20 and was saved on 2026-10-05. One miss is still not resolved.
-- voice guard: It is a hook that checks every comment, issue or PR body that I post through Claude Code against the voice-guide.md rules before it goes out, installed Nov 15, and stopped 2 real drafts, the Weblate claim and the update. For now it passed the same claim text a minute before stopping it, and it doesn't fire when gh is called by its full path
+- voice guard: It is a hook that checks every comment, issue or PR body that I post through Claude Code against the voice-guide.md rules before it goes out, installed Nov 15, and stopped 2 real drafts, the Weblate claim and the update. For now it passed the same claim text a minute before stopping it, and it doesn't fire when gh is called by its full path.
 - CLAUDE.local.md, the repo memory file: it is a private notes file in my Weblate clone that Claude Code reads every session. It imports Weblate's AGENTS.md and holds conventions. It is in use, first saying the widgets needed cairo, which was wrong for the current state of Weblate and I corrected it.
 - ship-gate: a hook that runs before gh pr create. It runs my manifest's checks, then my pr-precheck. The first run stopped my PR (description-honest); the second passed; PR #22856 opened.
 - PR monitor: reads my open PR (checks, reviews, quiet days) and drafts my next move into a file. It never posts. It is not installed yet. 
@@ -207,7 +207,7 @@ Result: pkg-14 passed cause-grounded, but it then failed executable, which led t
 **Beat 4:** plan-check, the Windows encoding error
 Date: 2026-10-12
 Friction: pkg-02 kept crashing the harness (claude exited 1: Warning: no stdin data received in 3s), so the full run couldn’t be saved.
-Change: i ran with PYTHONUTF8=1, because pkg-02’s emoji broke Windows’ default encoding.
+Change: I ran with PYTHONUTF8=1, because pkg-02’s emoji broke Windows’ default encoding.
 Result: the canary run scored 5/5, and the full 20/20 run saved.
 
 **Beat 5:** pr-precheck on MY own PR #83 draft
@@ -234,7 +234,7 @@ What I’d build: a last-minute check for linked PRs and new claim comments that
 Why it’s realistic: I already did this by hand on Weblate, with the GraphQL query that found PR #20392. The next step is making it part of the tool.
 
 **Tool limits.**
-issue-scout:  its unclaimed check is only a snapshot: it graded PR#107 as free 27 minutes after PR#540 had already been opened, and it couldn't see the sidebar-linked PR on #11161.
+issue-scout: its unclaimed check is only a snapshot: it graded power-grid-model-io#107 as free, but PR #540 was opened 27 minutes before my claim, and it couldn't see the sidebar-linked PR on #11161.
 issue-select: It can’t know my skills; it only uses scope.md to rank issues it has already accepted.
 plan-check: A plan that explains away a control with a believable but wrong story still passes cause-grounded.
 pr-precheck: It passes a false claim like “matches the expected output byte for byte” or “control unchanged”, because it can’t re-run anything.
