@@ -94,6 +94,10 @@ Run 1: all 3 checks passed, then it stopped on my own pr-precheck. description-h
 Run 2: PASS, 8/8. thread-engaged came back unclear, which my rubric counts as a pass. Then I opened PR #22856.
 An honest note: I created the PR using gh’s full path, so the hook didn’t run on the create step itself.
 
+
+**Unit 12: installed the PR monitor, state check only**
+I installed the PR monitor and ran --state, it read PR #22856: 5 checks passing, two reviews and the state FEEDBACK-IN. It didn't draft a reply because my playbook was empty and stops before calling Claude until all sections are filled in. I didn't have time to write the playbook, so I read nijel's review myself and have yet to reply. 
+
 ---
 
 ## Why I Chose This Issue
