@@ -55,77 +55,106 @@ All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
 **Unit 9: Built issue-scout and ran my first wild scan**
-
 What I built: issue-scout is my tool. It searches for candidate issues using my search strategy, then grades them with my rubric. 
 What it produced: My first wild scan (2026-11-15) graded its top 5 results. Three were rejected because they already had open PRs, and it accepted a junk issue labeled `invalid` and `duplicate`. After that I graded about 25 picks from the Issue Selection site one at a time; most were out because they already had open PRs or weren’t Python-first.
 What broke or fell short: I claimed power-grid-model-io#107, then found PR #540 had been opened 27 minutes before my claim. The scout’s “unclaimed” read was out of date by the time I acted on it, and I posted a withdrawal.
 What changed because of it: In the tool, I added `-linked:pr -label:invalid -label:duplicate -label:wontfix` to both queries, made the styling filter match whole words, and replaced `scope-bounded` with `scope-feasible` plus a difficulty note. In my process, before claiming weblate#11161, I ran a GraphQL query for prior PRs. It found the stale PR #20392 and nijel’s request for a UI option. That check is still manual; it isn’t part of the scout yet.
 
-**Unit 10: [one line on the tool work]**
+**Unit 10: voice-guard stops two drafts, memory file fixed**
+voice-guard: I merged my three copies of the voice guide into one file and added 4 “Upstream” rules for comments I post on real projects. I installed it as a hook, so it checks a draft automatically before I post.
+The memory file (CLAUDE.local.md): notes about the Weblate repo that Claude reads at the start of each session, such as setup steps and commands.
 
-[2-4 sentences: the voice-guard, the repo-memory file. What broke or
-fell short, and what changed because of it. "Nothing broke" counts when
-it is true - say how you know.]
+What broke, and what I changed
+The install failed on Windows. It expected python3 and symlinks, and Windows has neither. I changed it to python and used pointer files instead.
+The guard stopped two real drafts:
+21:29: My claim comment listed what my PR would contain, which breaks my rule "promise the investigation, not the fix."
+21:58: My update showed output without the command that produced it.
+I fixed both before posting.
+It wasn’t consistent. It passed the same claim text a minute before it stopped it.
+The memory file had a mistake. It said Weblate needed cairo, which is wrong for the current main. I corrected it and added the WSL commands.
 
-**Unit 11: [one line on the tool work]**
 
-[2-4 sentences: the ship-gate and your gate manifest. What it produced
-on your real branch, what fought you, what changed because of it.]
 
-**Unit 12: [one line on the tool work]**
+**Unit 11: ship-gate and my manifest**
+What I built
+The manifest: the list of checks that must pass before a PR goes out. It has 3 checks, all run in WSL through weblate-check.sh:
+the widget tests;
+prek on the changed files;
+mypy on the changed files.
+3 things I left out on purpose, each with a reason:
+the full test suite, which is too slow on my setup;
+prek --all-files, which rewrites files I didn’t touch;
+full mypy, which already fails on main with 248 errors in 35 files.
+The ship-gate: it runs the manifest, then my own pr-precheck, and stops the PR if anything fails.
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
+What happened
+
+The install broke the same way again. It wrote python3 into the hook, and I changed it to python, just like in Unit 10.
+Run 1: all 3 checks passed, then it stopped on my own pr-precheck. description-honest couldn’t verify “The commits carry an Assisted-by line” from the commit list. I removed the sentence.
+Run 2: PASS, 8/8. thread-engaged came back unclear, which my rubric counts as a pass. Then I opened PR #22856.
+An honest note: I created the PR using gh’s full path, so the hook didn’t run on the create step itself.
 
 ---
 
 ## Why I Chose This Issue
+how I found it and why I chose it
+How I searched: one issue-scout scan, plus about 25 picks from the Issue Selection site graded directly, with a Python filter.
+What I found: most of the picks already had open PRs or weren’t really Python projects.
+#107: the scout accepted it and I claimed it, but PR #540 had been opened 27 minutes earlier, so I withdrew.
+The scout’s verdict on #11161: ACCEPT, with all 5 required checks passing and difficulty “moderate”.
+My main 3 reasons for picking this issue: AI allowed, available, Python.
+I wanted to learn how much of this project I could help out on and how searching for issues can be difficult.
 
-[1-2 paragraphs in your own words: how you searched, what your scan
-surfaced, what your scout's verdict said, why this issue fits your
-profile, and what you hope to learn. If your scout's verdict on it
-was reject and you chose it anyway, say so here and say why; choosing
-against your own tool silently is what loses points. Close with an
-honest read of the tool itself: where the scout fell short on a real
-wild search and what you changed or would change, or what convinced
-you it held up. **Record the link to your claim comment in this section too.**
-Not claimed yet? Write `claim pending` and today's date where the link goes,
-and add the link the moment your claim lands.]
+What it missed:
+“Unclaimed” is only a snapshot; #107 was taken minutes later.
+It couldn’t see PR #20392, which was linked only in the sidebar. Only GraphQL showed it.
+What I changed:
+added a “scope-feasible” check and a difficulty note;
+added -linked:pr to the searches;
+made it a habit to re-check, including GraphQL, right before claiming.
+
+https://github.com/WeblateOrg/weblate/issues/11161#issuecomment-6905645265
 
 **Toolkit**
 
-- Tool: issue-scout (your scout: your search strategy, your rubric),
-  and how you used it
-- What it produced: [the scan and its verdict on this issue, described]
-- Difficulties: [where it fell short, or "none met" if none did]
-- What changed: [what you patched or would update, or "nothing"]
+- Tool: issue-scout. I ran one scan with the `gh search issues` queries in my search-strategy.md, then graded about 25 Issue Selection site picks one at a time in direct mode, reading each thread and its linked PRs.
+- What it produced: ACCEPT on #11161, with all five required checks passing and a "moderate" difficulty note. It had also accepted power-grid-model-io#107, which I lost to PR #540.
+- Difficulties: `unclaimed` is a point-in-time check, so it couldn't see PR #540 being opened 27 minutes before my claim on #107. It also missed PR #20392 on #11161, which was linked through the Development sidebar and only showed up through a GraphQL query. The site's Python filter returned many repos whose main language isn't Python.
+- What changed: I replaced `scope-bounded` with `scope-feasible` plus a difficulty note, added `-linked:pr` and junk-label exclusions to my queries, and started re-checking linked PRs (including through GraphQL) right before claiming. That last step is still manual.
 
 ---
 
 ## Understanding the Issue
 
 **Problem Description**
+what’s broken or missing: Weblate’s language bar chart widgets (the images projects embed to show translation progress) can only list languages alphabetically.
+There’s no way to order them by how translated they are, so I can’t make a “top languages” chart.
 
-[In your own words, what is broken or missing?]
 
 **Expected Behavior**
+what should happen: An option to sort languages by translation percentage, highest first.
+The option shows up in the UI as a checkbox on the widgets page. nijel asked for this on PR #20392.
+Without the option, the default order stays alphabetical.
 
-[What should happen?]
 
 **Current Behavior**
+what actually happens: Languages are always A–Z. In my repro, Czech at 75% is drawn above English at 100%.
+No URL parameter changes the order.
 
-[What actually happens?]
 
 **Affected Components**
+which parts of the codebase are involved: weblate/trans/widgets.py: the render() methods of MultiLanguageWidget and MatrixMultiLanguageWidget, which hold the sort line. The horizontal widget inherits from MultiLanguageWidget.
+weblate/trans/views/widgets.py and weblate/static/js/widgets.js, which show the options on the widgets page.
+weblate/trans/tests/test_widgets.py, for the tests.
+docs/changes.rst, for the changelog line.
 
-[Which parts of the codebase are involved?]
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code with my CLAUDE.local.md for Weblate. I had it read only the widget code (`widgets.py`, `views/widgets.py`, `widgets.js`, `test_widgets.py`) and the maintainer's example PR #20257, then wrote what it found into the memory file.
+- What it produced: The file map in Affected Components, the exact sort line in `MultiLanguageWidget.render()`, and #20257 as the pattern to copy.
+- Difficulties: The memory file's first version said the widgets need cairo/PyGObject. That came from older code and was wrong for current `main`, and it briefly sent my setup in the wrong direction.
+- What changed: I corrected CLAUDE.local.md, and I now check imports on the exact commit I'm working on before writing them down as facts.
 
 ---
 
@@ -173,10 +202,10 @@ Challenges and fixes:
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: repro-check, run on my claim draft before posting (claim-only mode), then on the full package (claim + repro report). The voice guard checked each comment before it went up.
+- What it produced: ACCEPT on the claim alone, then ACCEPT on the full package with all six required checks passing.
+- Difficulties: repro-check passed my first Weblate claim, but the voice guard stopped the same text for listing what a PR would contain, which breaks my rule "promise the investigation, not the fix." The two tools disagreed. The guard also stopped my update for showing output without the command that produced it.
+- What changed: I reworded the claim to say what a change looks like it would touch, added the pytest command above the output in my update, and put the full test code in the report so someone else can rebuild it.
 
 ---
 
@@ -204,10 +233,10 @@ Deviation (2026-11-16): my first test faked stats with `translation.stats.store(
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: plan-check, run on `plan.md` and a draft `plan-comment.md`, following the read order in my `procedure.md` (evidence and thread before the plan).
+- What it produced: ACCEPT with all six required checks passing. The preferred check `unknowns-stated` failed because my plan described the tie-break (equal percentages stay alphabetical) as settled, when the maintainer hadn't answered my question yet.
+- Difficulties: I wrote the plan before nijel answered, so the plan's confident wording got ahead of what I knew.
+- What changed: I added the tie-break to `plan.md` as an open question and said the same in the PR description.
 
 ---
 
@@ -242,10 +271,10 @@ With the parameter the SVG lists Japanese (100%), German (50%), Italian (50%), C
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: My new regression tests plus the three checks in my ship manifest (widget tests, prek on changed files, mypy on the two changed files), all run in WSL Ubuntu.
+- What it produced: The new tests fail on `main` (7 failed, 2 passed) and pass on the branch (3 passed, 6 subtests). The full widget suite gives 296 passed, prek passes, and mypy shows no errors in the changed files.
+- Difficulties: My first test faked stats with `translation.stats.store()`. Czech came out at 0% and vanished from the widget in both orders, which looked like a bug in my fix but was a bug in the test setup.
+- What changed: I rewrote the test to patch `get_language_stats()` with fixed stats, then confirmed the tests fail without the fix and pass with it.
 
 ---
 
@@ -273,10 +302,10 @@ Wrote my ship manifest (widget tests, prek, scoped mypy, each run in WSL against
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code, driving WSL Ubuntu through small `.sh` script files, on branch `feat/11161-widget-sort-by-percent`.
+- What it produced: Two commits: `8740190` (the feature, tests, and changelog line) and `9cd7f2c` (a mypy type narrowing in the tests).
+- Difficulties: PowerShell kept breaking inline `wsl ... bash -c` commands with quoting errors, and mypy flagged `"Widget" has no attribute "get_sorted_language_stats"` in my new test.
+- What changed: I moved every WSL command into a script file and added an `isinstance` check in the test so mypy knows the widget type.
 
 ---
 
@@ -288,33 +317,38 @@ Wrote my ship manifest (widget tests, prek, scoped mypy, each run in WSL against
 
 **Maintainer Feedback:**
 
-- 2026-11-16: none yet
+- 2026-11-16: The cubic-dev-ai review bot flagged that my fake stats were already in alphabetical order, so the default-order test couldn't catch a missing sort; nijel applied its suggested reorder as commit `104dfec`. nijel then commented on `widgets.py`: "I think using the string `sort` parameter would be a better approach, as it will allow us to extend in the future. The boolean flag is bounded to just this configuration."
+- 2026-11-16: Not answered yet.
 
 **Status:** Awaiting review
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: The ship-gate (my manifest's checks, then my pr-precheck on the branch, plan, evidence, and description), run by hand twice before opening the PR.
+- What it produced: Run 1: all three repo checks passed, then STOP, because my pr-precheck marked `description-honest` unclear on "The commits carry an `Assisted-by: Claude Code` line", which it couldn't verify from the commit list. Run 2: PASS. Then PR #22856 opened.
+- Difficulties: The hooks didn't fire on the actual `gh pr create`, because `gh` was called by its full path. Both had passed by hand on the same commit, title, and description just before.
+- What changed: I removed the sentence pr-precheck couldn't verify from the description.
 
 ---
 
 ## Learnings and Reflections
 
 **Technical Skills Gained**
-
-[What you learned technically, named concretely.]
+1. Setting up a big Linux-only project on Windows with WSL: PostgreSQL, Valkey, uv.
+2. Reading a large codebase by one subsystem (the widgets) instead of the whole thing.
+3. Writing Django tests, and mocking with patch.object to give a test fixed stats.
+4. mypy type narrowing with isinstance.
 
 **Challenges Overcome**
+1. Losing #107. PR #540 went up 27 minutes before my claim. I withdrew, switched to Weblate, and started checking for PRs right before claiming.
+2. Weblate on Windows. Native Windows couldn’t run it, and Codespaces was out of free hours. I moved to WSL, and pyicu needed libicu-dev, which isn’t in the docs.
 
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
 
 **What I'd Do Differently Next Time**
+1. Start earlier so I can work on an issue that hasn't been worked on yet
+2. Check for linked PRs (including GraphQL) right before claiming.
+3. Set up the Linux environment in case the issue needs it, even though I am not picking an issue using Linux
 
-[Reflection on your process.]
 
 ---
 
